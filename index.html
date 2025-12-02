@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LTV:CAC Calculator | Versasec</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #E31B23;
+            --secondary: #1A1A1A;
+            --light-gray: #F5F5F5;
+            --medium-gray: #E0E0E0;
+            --dark-gray: #666;
+            --success: #22C55E;
+            --warning: #EAB308;
+            --danger: #EF4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--light-gray);
+            color: var(--secondary);
+            line-height: 1.5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            height: 60px;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .card-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .section-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #999;
+            margin: 20px 0 12px 0;
+        }
+
+        .section-label:first-of-type {
+            margin-top: 0;
+        }
+
+        /* Two column layout for inputs */
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 700px) {
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Sliders */
+        .slider-group {
+            margin-bottom: 14px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .slider-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+
+        .slider-value {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary);
+            min-width: 70px;
+            text-align: right;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            padding: 2px 6px;
+            cursor: text;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .slider-value:hover {
+            border-color: var(--medium-gray);
+            background: #fafafa;
+        }
+
+        .slider-value:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 5px;
+            border-radius: 3px;
+            background: var(--medium-gray);
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(227, 27, 35, 0.3);
+            transition: transform 0.15s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            border: none;
+        }
+
+        /* Calculated values inline */
+        .calculated-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: var(--light-gray);
+            border-radius: 6px;
+            margin-top: 6px;
+            font-size: 0.8rem;
+        }
+
+        .calculated-row span:last-child {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Results Grid */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 10px;
+        }
+
+        .metric-card {
+            background: var(--light-gray);
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 2px;
+        }
+
+        .metric-label {
+            font-size: 0.65rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .metric-card.highlight {
+            background: var(--secondary);
+        }
+
+        .metric-card.highlight .metric-value {
+            color: white;
+        }
+
+        .metric-card.highlight .metric-label {
+            color: #999;
+        }
+
+        .ratio-good { background: var(--success) !important; }
+        .ratio-ok { background: var(--warning) !important; }
+        .ratio-bad { background: var(--danger) !important; }
+
+        .ratio-good .metric-value,
+        .ratio-ok .metric-value,
+        .ratio-bad .metric-value {
+            color: white !important;
+        }
+
+        .ratio-good .metric-label,
+        .ratio-ok .metric-label,
+        .ratio-bad .metric-label {
+            color: rgba(255,255,255,0.8) !important;
+        }
+
+        /* Timeline control */
+        .timeline-control {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            background: var(--light-gray);
+            border-radius: 8px;
+        }
+
+        .timeline-control label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--secondary);
+        }
+
+        .timeline-control input[type="range"] {
+            flex: 1;
+            max-width: 200px;
+        }
+
+        .timeline-control .timeline-value {
+            font-weight: 700;
+            color: var(--primary);
+            min-width: 60px;
+        }
+
+        /* Charts */
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .chart-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--secondary);
+            margin-bottom: 12px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 200px;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 100%;
+            padding: 10px 40px 25px 50px;
+        }
+
+        .chart-y-axis {
+            position: absolute;
+            left: 0;
+            top: 10px;
+            bottom: 25px;
+            width: 45px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-right: 8px;
+            font-size: 0.6rem;
+            color: #999;
+        }
+
+        .chart-y-axis-right {
+            position: absolute;
+            right: 0;
+            top: 10px;
+            bottom: 25px;
+            width: 35px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-left: 8px;
+            font-size: 0.6rem;
+            color: #999;
+        }
+
+        .chart-area {
+            position: relative;
+            height: 100%;
+            border-left: 1px solid #e8e8e8;
+            border-bottom: 1px solid #e8e8e8;
+            background: linear-gradient(180deg, #fafafa 0%, #ffffff 100%);
+            border-radius: 0 8px 0 0;
+        }
+
+        .chart-grid-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .chart-line svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
+        .chart-line path.line-primary {
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 1px 2px rgba(227, 27, 35, 0.15));
+        }
+
+        .chart-line path.line-secondary {
+            fill: none;
+            stroke: #999;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 6,4;
+        }
+
+        .chart-line path.area-primary {
+            fill: rgba(227, 27, 35, 0.1);
+            stroke: none;
+        }
+
+        .chart-dot {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border: 2px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .chart-dot:hover {
+            transform: translate(-50%, -50%) scale(1.25);
+            box-shadow: 0 4px 12px rgba(227, 27, 35, 0.3);
+        }
+
+        .chart-dot.secondary {
+            background: #666;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        .chart-dot.secondary:hover {
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .chart-tooltip {
+            position: fixed;
+            background: var(--secondary);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            z-index: 1000;
+            white-space: nowrap;
+        }
+
+        .chart-tooltip.visible {
+            opacity: 1;
+        }
+
+        .chart-tooltip strong {
+            color: var(--primary);
+            font-size: 1rem;
+        }
+
+        .chart-x-labels {
+            position: absolute;
+            bottom: 0;
+            left: 50px;
+            right: 40px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6rem;
+            color: #999;
+            padding-top: 5px;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 16px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            color: var(--dark-gray);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 3px;
+            border-radius: 2px;
+        }
+
+        .legend-dot.primary {
+            background: var(--primary);
+        }
+
+        .legend-dot.secondary {
+            background: var(--dark-gray);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .results-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header h1 {
+                font-size: 1.4rem;
+            }
+
+            .metric-value {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <img class="logo" src="data:image/png;base64,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" alt="Versasec">
+            <h1>LTV:CAC Calculator</h1>
+            <p>Model your ARR growth and unit economics over time</p>
+        </div>
+
+        <!-- Inputs -->
+        <div class="card">
+            <div class="card-title">Inputs</div>
+
+            <div class="input-grid">
+                <div class="input-column">
+                    <!-- Business Metrics -->
+                    <div class="section-label">Business Metrics</div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Annual Contract Value (ACV)</span>
+                            <input type="text" class="slider-value" id="acvValue" value="€5,000" data-slider="acv" data-type="currency">
+                        </div>
+                        <input type="range" id="acv" min="1000" max="50000" step="500" value="5000">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Customer Lifespan (years)</span>
+                            <input type="text" class="slider-value" id="lifespanValue" value="3" data-slider="lifespan" data-type="number">
+                        </div>
+                        <input type="range" id="lifespan" min="1" max="10" step="1" value="3">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Gross Margin</span>
+                            <input type="text" class="slider-value" id="marginValue" value="80%" data-slider="margin" data-type="percent">
+                        </div>
+                        <input type="range" id="margin" min="0" max="100" step="1" value="80">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Current ARR</span>
+                            <input type="text" class="slider-value" id="currentArrValue" value="€100K" data-slider="currentArr" data-type="currency">
+                        </div>
+                        <input type="range" id="currentArr" min="0" max="5000000" step="10000" value="100000">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Current Customers</span>
+                            <input type="text" class="slider-value" id="currentCustomersValue" value="20" data-slider="currentCustomers" data-type="number">
+                        </div>
+                        <input type="range" id="currentCustomers" min="0" max="500" step="1" value="20">
+                    </div>
+
+                    <!-- Fixed Costs -->
+                    <div class="section-label">Fixed Costs</div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Fixed Marketing & Sales (Annual)</span>
+                            <input type="text" class="slider-value" id="fixedCostsValue" value="€1M" data-slider="fixedCosts" data-type="currency">
+                        </div>
+                        <input type="range" id="fixedCosts" min="500000" max="3000000" step="50000" value="1000000">
+                    </div>
+                </div>
+
+                <div class="input-column">
+                    <!-- Organic Funnel -->
+                    <div class="section-label">Organic Traffic (Content)</div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Avg Views per Video</span>
+                            <input type="text" class="slider-value" id="viewsPerVideoValue" value="2,500" data-slider="viewsPerVideo" data-type="number">
+                        </div>
+                        <input type="range" id="viewsPerVideo" min="0" max="5000" step="1" value="1000">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Videos Posted per Month</span>
+                            <input type="text" class="slider-value" id="videosPerMonthValue" value="4" data-slider="videosPerMonth" data-type="decimal">
+                        </div>
+                        <input type="range" id="videosPerMonth" min="0" max="20" step="0.5" value="4">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">View → Opt-in Rate</span>
+                            <input type="text" class="slider-value" id="viewOptinValue" value="2%" data-slider="viewOptin" data-type="percent-decimal">
+                        </div>
+                        <input type="range" id="viewOptin" min="0.1" max="10" step="0.1" value="2">
+                    </div>
+
+                    <div class="calculated-row">
+                        <span>Organic New Subs / Month</span>
+                        <span id="organicSubs">200</span>
+                    </div>
+
+                    <!-- Paid Funnel -->
+                    <div class="section-label">Paid Traffic (Ads)</div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Monthly Ad Spend</span>
+                            <input type="text" class="slider-value" id="adSpendValue" value="€600" data-slider="adSpend" data-type="currency">
+                        </div>
+                        <input type="range" id="adSpend" min="0" max="50000" step="100" value="600">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Cost per Lead</span>
+                            <input type="text" class="slider-value" id="cplValue" value="€15" data-slider="cpl" data-type="currency-simple">
+                        </div>
+                        <input type="range" id="cpl" min="1" max="100" step="1" value="15">
+                    </div>
+
+                    <div class="calculated-row">
+                        <span>Paid New Subs / Month</span>
+                        <span id="paidSubs">40</span>
+                    </div>
+
+                    <!-- Other Channels -->
+                    <div class="section-label">Other Channels</div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Customers / Month (Other)</span>
+                            <input type="text" class="slider-value" id="otherChannelsValue" value="0" data-slider="otherChannels" data-type="number">
+                        </div>
+                        <input type="range" id="otherChannels" min="0" max="100" step="1" value="0">
+                    </div>
+
+                    <!-- Conversion -->
+                    <div class="section-label">Conversion Rates</div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">List → Demo Rate (monthly)</span>
+                            <input type="text" class="slider-value" id="demoRateValue" value="1%" data-slider="demoRate" data-type="percent-decimal">
+                        </div>
+                        <input type="range" id="demoRate" min="0.1" max="5" step="0.1" value="1">
+                    </div>
+
+                    <div class="slider-group">
+                        <div class="slider-header">
+                            <span class="slider-label">Demo → Close Rate</span>
+                            <input type="text" class="slider-value" id="closeRateValue" value="20%" data-slider="closeRate" data-type="percent">
+                        </div>
+                        <input type="range" id="closeRate" min="5" max="50" step="1" value="20">
+                    </div>
+
+                    <div class="calculated-row">
+                        <span>New Customers / Month</span>
+                        <span id="customersMonth">2</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="card">
+            <div class="card-title">Results</div>
+            <div class="results-grid">
+                <div class="metric-card">
+                    <div class="metric-value" id="blendedCAC">€50K</div>
+                    <div class="metric-label">Blended CAC</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="ltv">€12K</div>
+                    <div class="metric-label">LTV</div>
+                </div>
+                <div class="metric-card highlight" id="ratioCard">
+                    <div class="metric-value" id="ratio">0.2:1</div>
+                    <div class="metric-label">LTV:CAC</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="paybackTime">2.5 yrs</div>
+                    <div class="metric-label">Payback Time</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projections -->
+        <div class="card">
+            <div class="card-title">Projections</div>
+
+            <div class="timeline-control">
+                <label>Timeline:</label>
+                <input type="range" id="timeline" min="1" max="10" step="1" value="3">
+                <span class="timeline-value" id="timelineValue">3 years</span>
+            </div>
+
+            <!-- Chart: New ARR & Customers per Year -->
+            <div class="chart-card">
+                <div class="chart-title">New ARR & Customers per Year</div>
+                <div class="chart-container">
+                    <div class="chart-wrapper">
+                        <div class="chart-y-axis" id="chart1YAxis"></div>
+                        <div class="chart-y-axis-right" id="chart1YAxisRight"></div>
+                        <div class="chart-area" id="chart1Area"></div>
+                        <div class="chart-x-labels" id="chart1XLabels"></div>
+                    </div>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-item"><div class="legend-dot primary"></div>New ARR</div>
+                    <div class="legend-item"><div class="legend-dot secondary"></div>New Customers per Year</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tooltip -->
+        <div class="chart-tooltip" id="tooltip"></div>
+    </div>
+
+    <script>
+        // Get all input elements
+        const inputs = {
+            acv: document.getElementById('acv'),
+            lifespan: document.getElementById('lifespan'),
+            margin: document.getElementById('margin'),
+            currentArr: document.getElementById('currentArr'),
+            currentCustomers: document.getElementById('currentCustomers'),
+            fixedCosts: document.getElementById('fixedCosts'),
+            viewsPerVideo: document.getElementById('viewsPerVideo'),
+            videosPerMonth: document.getElementById('videosPerMonth'),
+            viewOptin: document.getElementById('viewOptin'),
+            adSpend: document.getElementById('adSpend'),
+            cpl: document.getElementById('cpl'),
+            otherChannels: document.getElementById('otherChannels'),
+            demoRate: document.getElementById('demoRate'),
+            closeRate: document.getElementById('closeRate'),
+            timeline: document.getElementById('timeline')
+        };
+
+        const tooltip = document.getElementById('tooltip');
+
+        // Format currency
+        function formatCurrency(value, short = true) {
+            if (short) {
+                if (value >= 1000000) {
+                    return '€' + (value / 1000000).toFixed(2) + 'M';
+                } else if (value >= 10000) {
+                    return '€' + (value / 1000).toFixed(1) + 'K';
+                } else if (value >= 1000) {
+                    return '€' + (value / 1000).toFixed(2) + 'K';
+                }
+            }
+            return '€' + Math.round(value).toLocaleString();
+        }
+
+        // Format number with commas
+        function formatNumber(value) {
+            return Math.round(value).toLocaleString();
+        }
+
+        // Calculate and update everything
+        function calculate() {
+            // Get values
+            const acv = parseFloat(inputs.acv.value);
+            const lifespan = parseFloat(inputs.lifespan.value);
+            const margin = parseFloat(inputs.margin.value) / 100;
+            const currentArr = parseFloat(inputs.currentArr.value);
+            const currentCustomers = parseFloat(inputs.currentCustomers.value);
+            const emailList = 0; // Start with no existing email list
+            const fixedCosts = parseFloat(inputs.fixedCosts.value);
+            const viewsPerVideo = parseFloat(inputs.viewsPerVideo.value);
+            const videosPerMonth = parseFloat(inputs.videosPerMonth.value);
+            const viewOptin = parseFloat(inputs.viewOptin.value) / 100;
+            const adSpend = parseFloat(inputs.adSpend.value);
+            const cpl = parseFloat(inputs.cpl.value);
+            const otherChannels = parseFloat(inputs.otherChannels.value);
+            const demoRate = parseFloat(inputs.demoRate.value) / 100;
+            const closeRate = parseFloat(inputs.closeRate.value) / 100;
+            const timelineYears = parseFloat(inputs.timeline.value);
+
+            // Update slider value displays
+            document.getElementById('acvValue').value = formatCurrency(acv);
+            document.getElementById('lifespanValue').value = lifespan;
+            document.getElementById('marginValue').value = Math.round(margin * 100) + '%';
+            document.getElementById('currentArrValue').value = formatCurrency(currentArr);
+            document.getElementById('currentCustomersValue').value = currentCustomers;
+            document.getElementById('fixedCostsValue').value = formatCurrency(fixedCosts);
+            document.getElementById('viewsPerVideoValue').value = formatNumber(viewsPerVideo);
+            document.getElementById('videosPerMonthValue').value = videosPerMonth % 1 === 0 ? videosPerMonth : videosPerMonth.toFixed(1);
+            document.getElementById('viewOptinValue').value = (viewOptin * 100).toFixed(1) + '%';
+            document.getElementById('adSpendValue').value = formatCurrency(adSpend);
+            document.getElementById('cplValue').value = '€' + cpl;
+            document.getElementById('otherChannelsValue').value = otherChannels;
+            document.getElementById('demoRateValue').value = (demoRate * 100).toFixed(1) + '%';
+            document.getElementById('closeRateValue').value = Math.round(closeRate * 100) + '%';
+            document.getElementById('timelineValue').textContent = timelineYears + (timelineYears === 1 ? ' year' : ' years');
+
+            // Calculate funnel metrics
+            const organicViewsPerMonth = viewsPerVideo * videosPerMonth;
+            const organicNewSubs = organicViewsPerMonth * viewOptin;
+            const paidNewSubs = cpl > 0 && adSpend > 0 ? adSpend / cpl : 0;
+            const totalNewSubs = organicNewSubs + paidNewSubs;
+
+            // Demos and customers from current list
+            const demos = emailList * demoRate;
+            const newCustomersMonth = demos * closeRate;
+
+            // Update calculated rows
+            document.getElementById('organicSubs').textContent = formatNumber(organicNewSubs);
+            document.getElementById('paidSubs').textContent = formatNumber(paidNewSubs);
+            document.getElementById('customersMonth').textContent = newCustomersMonth.toFixed(1);
+
+            // Annual metrics
+            const newCustomersYear = newCustomersMonth * 12;
+            const annualAdSpend = adSpend * 12;
+            const totalAnnualCosts = annualAdSpend + fixedCosts;
+
+            // New ARR per year
+            const newArrYear = newCustomersYear * acv;
+
+            // Calculate metrics
+            const ltv = acv * lifespan * margin;
+            const blendedCAC = newCustomersYear > 0 ? totalAnnualCosts / newCustomersYear : 0;
+            const ratio = blendedCAC > 0 ? ltv / blendedCAC : 0;
+
+            // Generate yearly projection
+            const projections = [];
+            let runningList = emailList;
+            let runningArr = currentArr;
+            let runningCustomers = currentCustomers;
+
+            for (let year = 1; year <= timelineYears; year++) {
+                // Simulate 12 months
+                let yearNewCustomers = 0;
+                let yearNewArr = 0;
+
+                for (let month = 1; month <= 12; month++) {
+                    runningList += totalNewSubs;
+                    const monthDemos = runningList * demoRate;
+                    const funnelCustomers = monthDemos * closeRate;
+                    const monthCustomers = funnelCustomers + otherChannels;
+                    yearNewCustomers += monthCustomers;
+                    yearNewArr += monthCustomers * acv;
+                }
+
+                runningArr += yearNewArr;
+                runningCustomers += yearNewCustomers;
+
+                const yearBlendedCAC = yearNewCustomers > 0 ? totalAnnualCosts / yearNewCustomers : 0;
+                const yearRatio = yearBlendedCAC > 0 ? ltv / yearBlendedCAC : 0;
+
+                projections.push({
+                    year,
+                    newArr: yearNewArr,
+                    cumulativeArr: runningArr,
+                    newCustomers: yearNewCustomers,
+                    totalCustomers: runningCustomers,
+                    listSize: runningList,
+                    blendedCAC: yearBlendedCAC,
+                    ratio: yearRatio
+                });
+            }
+
+            // Update current metrics display using year 1 projections
+            const year1 = projections[0] || { blendedCAC: 0, ratio: 0 };
+            document.getElementById('blendedCAC').textContent = year1.blendedCAC > 0 ? formatCurrency(year1.blendedCAC) : '—';
+            document.getElementById('ltv').textContent = formatCurrency(ltv);
+            document.getElementById('ratio').textContent = year1.ratio > 0 ? year1.ratio.toFixed(1) + ':1' : '—';
+
+            // Calculate payback time in months (CAC / annual revenue per customer * 12)
+            const annualRevenuePerCustomer = acv * margin;
+            const paybackMonths = year1.blendedCAC > 0 && annualRevenuePerCustomer > 0
+                ? (year1.blendedCAC / annualRevenuePerCustomer) * 12
+                : 0;
+            document.getElementById('paybackTime').textContent = paybackMonths > 0
+                ? paybackMonths.toFixed(1) + ' mo'
+                : '—';
+
+            // Color code the ratio
+            const ratioCard = document.getElementById('ratioCard');
+            ratioCard.classList.remove('ratio-good', 'ratio-ok', 'ratio-bad', 'highlight');
+            if (year1.ratio >= 5) {
+                ratioCard.classList.add('ratio-good');
+            } else if (year1.ratio >= 3) {
+                ratioCard.classList.add('ratio-ok');
+            } else if (year1.ratio > 0) {
+                ratioCard.classList.add('ratio-bad');
+            } else {
+                ratioCard.classList.add('highlight');
+            }
+
+            // Update charts
+            updateCharts(projections);
+        }
+
+        function updateCharts(projections) {
+            updateChart1(projections);
+        }
+
+        function updateChart1(projections) {
+            const chartArea = document.getElementById('chart1Area');
+            const yAxis = document.getElementById('chart1YAxis');
+            const yAxisRight = document.getElementById('chart1YAxisRight');
+            const xLabels = document.getElementById('chart1XLabels');
+
+            if (projections.length === 0) return;
+
+            const maxNewArr = Math.max(...projections.map(p => p.newArr));
+            const maxCustomers = Math.max(...projections.map(p => p.newCustomers));
+            const yMax = Math.ceil(maxNewArr / 100000) * 100000 || 100000;
+            const yMaxCustomers = Math.ceil(maxCustomers / 10) * 10 || 10;
+
+            // Y axis left (ARR)
+            yAxis.innerHTML = '';
+            for (let i = 4; i >= 0; i--) {
+                const label = document.createElement('span');
+                label.textContent = formatCurrency(yMax * (i / 4));
+                yAxis.appendChild(label);
+            }
+
+            // Y axis right (Customers)
+            yAxisRight.innerHTML = '';
+            for (let i = 4; i >= 0; i--) {
+                const label = document.createElement('span');
+                label.textContent = Math.round(yMaxCustomers * (i / 4));
+                yAxisRight.appendChild(label);
+            }
+
+            // X axis
+            xLabels.innerHTML = projections.map(p => `<span>Y${p.year}</span>`).join('');
+
+            // Grid lines
+            chartArea.querySelectorAll('.chart-grid-line').forEach(el => el.remove());
+            for (let i = 1; i <= 4; i++) {
+                const line = document.createElement('div');
+                line.className = 'chart-grid-line';
+                line.style.bottom = (i * 25) + '%';
+                chartArea.appendChild(line);
+            }
+
+            // Bars/line
+            const width = chartArea.clientWidth;
+            const height = chartArea.clientHeight;
+            const padding = 20;
+
+            // ARR points
+            const arrPoints = projections.map((p, i) => {
+                const x = padding + ((i + 0.5) / projections.length) * (width - padding * 2);
+                const y = height - (p.newArr / yMax) * height;
+                return { x, y, data: p };
+            });
+
+            // Customer points
+            const customerPoints = projections.map((p, i) => {
+                const x = padding + ((i + 0.5) / projections.length) * (width - padding * 2);
+                const y = height - (p.newCustomers / yMaxCustomers) * height;
+                return { x, y, data: p };
+            });
+
+            // SVG
+            const existingSvg = chartArea.querySelector('svg');
+            if (existingSvg) existingSvg.remove();
+
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;';
+            svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            svg.setAttribute('preserveAspectRatio', 'none');
+
+            // Add gradient definition
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+            gradient.setAttribute('id', 'areaGradient1');
+            gradient.setAttribute('x1', '0%');
+            gradient.setAttribute('y1', '0%');
+            gradient.setAttribute('x2', '0%');
+            gradient.setAttribute('y2', '100%');
+
+            const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            stop1.setAttribute('offset', '0%');
+            stop1.setAttribute('style', 'stop-color:rgba(227,27,35,0.25)');
+
+            const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            stop2.setAttribute('offset', '100%');
+            stop2.setAttribute('style', 'stop-color:rgba(227,27,35,0.02)');
+
+            gradient.appendChild(stop1);
+            gradient.appendChild(stop2);
+            defs.appendChild(gradient);
+            svg.appendChild(defs);
+
+            // ARR Area fill
+            const arrPath = arrPoints.map((p, i) => (i === 0 ? 'M' : 'L') + p.x + ',' + p.y).join(' ');
+            const areaD = arrPath + ` L${arrPoints[arrPoints.length-1].x},${height} L${arrPoints[0].x},${height} Z`;
+
+            const area = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            area.setAttribute('d', areaD);
+            area.setAttribute('fill', 'url(#areaGradient1)');
+            svg.appendChild(area);
+
+            // ARR Line
+            const arrLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            arrLine.setAttribute('d', arrPath);
+            arrLine.setAttribute('class', 'line-primary');
+            svg.appendChild(arrLine);
+
+            // Customers Line (dashed)
+            const customerPath = customerPoints.map((p, i) => (i === 0 ? 'M' : 'L') + p.x + ',' + p.y).join(' ');
+            const customerLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            customerLine.setAttribute('d', customerPath);
+            customerLine.setAttribute('class', 'line-secondary');
+            svg.appendChild(customerLine);
+
+            chartArea.appendChild(svg);
+
+            // Dots
+            chartArea.querySelectorAll('.chart-dot').forEach(el => el.remove());
+
+            // ARR dots
+            arrPoints.forEach(p => {
+                const dot = document.createElement('div');
+                dot.className = 'chart-dot';
+                dot.style.left = (p.x / width * 100) + '%';
+                dot.style.top = (p.y / height * 100) + '%';
+
+                dot.addEventListener('mouseenter', (e) => {
+                    tooltip.innerHTML = `
+                        <div><strong>${formatCurrency(p.data.cumulativeArr)}</strong> Total ARR</div>
+                        <div style="margin-top:4px; opacity:0.8;">
+                            Year ${p.data.year}<br>
+                            New ARR: ${formatCurrency(p.data.newArr)}<br>
+                            +${formatNumber(p.data.newCustomers)} new customers<br>
+                            Total Customers: ${formatNumber(p.data.totalCustomers)}
+                        </div>
+                    `;
+                    positionTooltip(e);
+                    tooltip.classList.add('visible');
+                });
+
+                dot.addEventListener('mouseleave', () => {
+                    tooltip.classList.remove('visible');
+                });
+
+                chartArea.appendChild(dot);
+            });
+        }
+
+        function positionTooltip(e) {
+            const x = e.clientX;
+            const y = e.clientY;
+            tooltip.style.left = x + 'px';
+            tooltip.style.top = (y - 80) + 'px';
+        }
+
+        // Add event listeners to all slider inputs
+        Object.values(inputs).forEach(input => {
+            input.addEventListener('input', calculate);
+        });
+
+        // Parse value from text input based on type
+        function parseInputValue(value, type) {
+            // Remove currency symbols, commas, K, M, % symbols
+            let cleaned = value.replace(/[€$,\s]/g, '');
+
+            if (type === 'currency' || type === 'currency-simple') {
+                // Handle K and M suffixes
+                if (cleaned.toUpperCase().endsWith('M')) {
+                    return parseFloat(cleaned.slice(0, -1)) * 1000000;
+                } else if (cleaned.toUpperCase().endsWith('K')) {
+                    return parseFloat(cleaned.slice(0, -1)) * 1000;
+                }
+                return parseFloat(cleaned) || 0;
+            } else if (type === 'percent') {
+                cleaned = cleaned.replace('%', '');
+                return parseFloat(cleaned) || 0;
+            } else if (type === 'percent-decimal') {
+                cleaned = cleaned.replace('%', '');
+                return parseFloat(cleaned) || 0;
+            } else if (type === 'number' || type === 'decimal') {
+                return parseFloat(cleaned) || 0;
+            }
+            return parseFloat(cleaned) || 0;
+        }
+
+        // Add event listeners to all editable value inputs
+        document.querySelectorAll('.slider-value').forEach(input => {
+            const sliderId = input.dataset.slider;
+            const type = input.dataset.type;
+            const slider = document.getElementById(sliderId);
+
+            if (!slider) return;
+
+            // Update slider when text input changes
+            input.addEventListener('change', () => {
+                let value = parseInputValue(input.value, type);
+
+                // Clamp to slider min/max
+                const min = parseFloat(slider.min);
+                const max = parseFloat(slider.max);
+                value = Math.max(min, Math.min(max, value));
+
+                slider.value = value;
+                calculate();
+            });
+
+            // Handle Enter key
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    input.blur();
+                }
+            });
+
+            // Select all text on focus for easy editing
+            input.addEventListener('focus', () => {
+                input.select();
+            });
+        });
+
+        // Initial calculation
+        calculate();
+
+        // Recalculate on resize for charts
+        window.addEventListener('resize', calculate);
+    </script>
+</body>
+</html>
